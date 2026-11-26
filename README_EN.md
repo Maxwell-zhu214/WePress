@@ -18,15 +18,18 @@ WePress is an open-source Obsidian plugin designed to format and seamlessly sync
 
 ![Split-screen live preview and WeChat simulator](assets/screenshot_preview.png)
 
-### 🎨 Built-in Layout Styles
+<h3 align="center">🎨 Built-in Layout Styles</h3>
 
-| Minimalist (极细线框风) | Modern Left (现代左竖风) |
-| :---: | :---: |
-| <img src="assets/style_minimalist.png" width="320" alt="Minimalist"/> | <img src="assets/style_modern_left.png" width="320" alt="Modern Left"/> |
-
-| Corporate Box (商务色块风) | Premium Card (高级卡片风) |
-| :---: | :---: |
-| <img src="assets/style_corporate_box.png" width="320" alt="Corporate Box"/> | <img src="assets/style_premium_card.png" width="320" alt="Premium Card"/> |
+<table align="center">
+  <tr>
+    <td align="center"><b>Minimalist (极细线框风)</b><br><img src="assets/style_minimalist.png" width="320" alt="Minimalist"/></td>
+    <td align="center"><b>Modern Left (现代左竖风)</b><br><img src="assets/style_modern_left.png" width="320" alt="Modern Left"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Corporate Box (商务色块风)</b><br><img src="assets/style_corporate_box.png" width="320" alt="Corporate Box"/></td>
+    <td align="center"><b>Premium Card (高级卡片风)</b><br><img src="assets/style_premium_card.png" width="320" alt="Premium Card"/></td>
+  </tr>
+</table>
 
 
 ---
@@ -100,13 +103,22 @@ tags:
 
 <h2 align="center">💬 Contact & Collaboration</h2>
 
-If you encounter any issues or wish to discuss legal AI, self-media creation, or digital efficiency tools, feel free to follow my WeChat Official Account or add me on WeChat.
+<p align="center">If you encounter any issues or wish to discuss legal AI, self-media creation, or digital efficiency tools, feel free to follow my WeChat Official Account or add me on WeChat.</p>
 
-| WeChat Official Account | Personal WeChat |
-| :---: | :---: |
-| <img src="assets/qrcode_mp.png" width="220" alt="WeChat Official Account"/> <br> **WeChat Account: Mingtalk** | <img src="assets/qrcode_personal.png" width="220" alt="Personal WeChat"/> <br> **Personal WeChat: Maxwell** |
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="assets/qrcode_mp.png" width="220" alt="WeChat Official Account"/><br>
+      <b>WeChat Account: Mingtalk</b>
+    </td>
+    <td align="center">
+      <img src="assets/qrcode_personal.png" width="220" alt="Personal WeChat"/><br>
+      <b>Personal WeChat: Maxwell</b>
+    </td>
+  </tr>
+</table>
 
-*   **Commercial Licensing Email**: `maxwell.m.zhu@outlook.com`
+<p align="center"><b>Commercial Licensing Email</b>: <code>maxwell.m.zhu@outlook.com</code></p>
 
 ---
 

@@ -18,15 +18,18 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 
 ![双栏排版实时预览与微信端模拟器](assets/screenshot_preview.png)
 
-### 🎨 四套内置排版风格对比 (Layout Styles)
+<h3 align="center">🎨 四套内置排版风格对比 (Layout Styles)</h3>
 
-| 极细线框风 (Minimalist) | 现代左竖风 (Modern Left) |
-| :---: | :---: |
-| <img src="assets/style_minimalist.png" width="320" alt="极细线框风"/> | <img src="assets/style_modern_left.png" width="320" alt="现代左竖风"/> |
-
-| 商务色块风 (Corporate Box) | 高级卡片风 (Premium Card) |
-| :---: | :---: |
-| <img src="assets/style_corporate_box.png" width="320" alt="商务色块风"/> | <img src="assets/style_premium_card.png" width="320" alt="高级卡片风"/> |
+<table align="center">
+  <tr>
+    <td align="center"><b>极细线框风 (Minimalist)</b><br><img src="assets/style_minimalist.png" width="320" alt="极细线框风"/></td>
+    <td align="center"><b>现代左竖风 (Modern Left)</b><br><img src="assets/style_modern_left.png" width="320" alt="现代左竖风"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>商务色块风 (Corporate Box)</b><br><img src="assets/style_corporate_box.png" width="320" alt="商务色块风"/></td>
+    <td align="center"><b>高级卡片风 (Premium Card)</b><br><img src="assets/style_premium_card.png" width="320" alt="高级卡片风"/></td>
+  </tr>
+</table>
 
 
 ---
@@ -100,13 +103,22 @@ tags:
 
 <h2 align="center">💬 联系与交流 (Contact)</h2>
 
-如果您在使用过程中遇到任何问题，或者希望交流法律 AI、自媒体创作以及数字化效率工具，欢迎关注我的微信公众号或添加我的个人微信。
+<p align="center">如果您在使用过程中遇到任何问题，或者希望交流法律 AI、自媒体创作以及数字化效率工具，欢迎关注我的微信公众号或添加我的个人微信。</p>
 
-| 微信公众号 | 个人微信 |
-| :---: | :---: |
-| <img src="assets/qrcode_mp.png" width="220" alt="微信公众号"/> <br> **微信公众号：铭泽说Mingtalk** | <img src="assets/qrcode_personal.png" width="220" alt="个人微信"/> <br> **个人微信：铭泽律师** |
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="assets/qrcode_mp.png" width="220" alt="微信公众号"/><br>
+      <b>微信公众号：铭泽说Mingtalk</b>
+    </td>
+    <td align="center">
+      <img src="assets/qrcode_personal.png" width="220" alt="个人微信"/><br>
+      <b>个人微信：铭泽律师</b>
+    </td>
+  </tr>
+</table>
 
-*   **商业授权联系邮箱**：`maxwell.m.zhu@outlook.com`
+<p align="center"><b>商业授权联系邮箱</b>：<code>maxwell.m.zhu@outlook.com</code></p>
 
 ---
 
