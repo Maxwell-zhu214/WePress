@@ -105,18 +105,13 @@ tags:
 
 <p align="center">If you encounter any issues or wish to discuss legal AI, self-media creation, or digital efficiency tools, feel free to follow my WeChat Official Account or add me on WeChat.</p>
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="assets/qrcode_mp.png" width="220" alt="WeChat Official Account"/><br>
-      <b>WeChat Account: Mingtalk</b>
-    </td>
-    <td align="center">
-      <img src="assets/qrcode_personal.png" width="220" alt="Personal WeChat"/><br>
-      <b>Personal WeChat: Maxwell</b>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="assets/qrcode_mp.png" width="200" alt="WeChat Official Account: Mingtalk"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/qrcode_personal.png" width="200" alt="Personal WeChat: Maxwell"/>
+  <br>
+  <b>Left: WeChat Account (Mingtalk)</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Right: Personal WeChat (Maxwell)</b>
+</div>
 
 <p align="center"><b>Commercial Licensing Email</b>: <code>maxwell.m.zhu@outlook.com</code></p>
 

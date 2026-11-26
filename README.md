@@ -105,18 +105,13 @@ tags:
 
 <p align="center">如果您在使用过程中遇到任何问题，或者希望交流法律 AI、自媒体创作以及数字化效率工具，欢迎关注我的微信公众号或添加我的个人微信。</p>
 
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="assets/qrcode_mp.png" width="220" alt="微信公众号"/><br>
-      <b>微信公众号：铭泽说Mingtalk</b>
-    </td>
-    <td align="center">
-      <img src="assets/qrcode_personal.png" width="220" alt="个人微信"/><br>
-      <b>个人微信：铭泽律师</b>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="assets/qrcode_mp.png" width="200" alt="微信公众号：铭泽说Mingtalk"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/qrcode_personal.png" width="200" alt="个人微信：铭泽律师"/>
+  <br>
+  <b>左：微信公众号「铭泽说Mingtalk」</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>右：个人微信「铭泽律师」</b>
+</div>
 
 <p align="center"><b>商业授权联系邮箱</b>：<code>maxwell.m.zhu@outlook.com</code></p>
 
