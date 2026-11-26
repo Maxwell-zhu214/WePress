@@ -17,7 +17,8 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 <h2 align="center">📷 功能效果预览 (Screenshots)</h2>
 
 <div align="center">
-  <img src="assets/screenshot_preview.png" alt="双栏排版实时预览与微信端模拟器"/>
+  <img src="assets/demo.gif" width="800" alt="WePress 实操演示：实时预览、风格切换与一键同步"/><br>
+  <sub>🎬 实操录屏（2.8x 加速）：打开实时预览 → 切换版式与字号 → 一键同步草稿箱</sub>
 </div>
 
 <h3 align="center">🎨 四套内置排版风格对比 (Layout Styles)</h3>

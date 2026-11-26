@@ -14,10 +14,11 @@ WePress is an open-source Obsidian plugin designed to format and seamlessly sync
 
 ---
 
-<h2 align="center">📷 Screenshots</h2>
+<h2 align="center">📷 Demo & Screenshots</h2>
 
 <div align="center">
-  <img src="assets/screenshot_preview.png" alt="Split-screen live preview and WeChat simulator"/>
+  <img src="assets/demo.gif" width="800" alt="WePress Live Demo: Real-time preview, style switching, and one-click sync"/><br>
+  <sub>🎬 Live Demo (2.8x speed): Open live preview → Switch layout styles & typography → One-click sync to WeChat Drafts</sub>
 </div>
 
 <h3 align="center">🎨 Built-in Layout Styles</h3>
