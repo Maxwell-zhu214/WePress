@@ -50,7 +50,7 @@ This plugin undergoes rigorous security checks to guarantee your privacy:
 
 <h2 align="center">✨ Key Features & Advantages</h2>
 
-*   **Non-Commercial Open Source & Attribution**: Developed by **铭泽律师 (Maxwell)** for legal professionals and creators. Free for personal, research, and non-profit use; **commercial sale, paid bundling, or unauthorized commercial use is strictly prohibited**, and original author attribution must be retained (see [LICENSE](LICENSE)).
+*   **Non-Commercial Open Source & Paid Commercial Licensing**: Developed by **铭泽律师 (Maxwell)** for legal professionals and creators. Free for personal, research, and non-profit use; **commercial sale, paid bundling, or unauthorized commercial use is strictly prohibited**. Any commercial use requires **contacting the author (`maxwell.m.zhu@outlook.com`) for a paid commercial license and prior written authorization** (see [LICENSE](LICENSE)). Original author attribution must be retained.
 *   **Side-by-Side Live Preview**: Open an interactive mobile simulator inside Obsidian that aligns 100% with the WeChat layout. Visual rendering updates instantly as you edit, saving you from repetitive copy-pasting.
 *   **Four Curated Layout Presets**: Built-in "Minimalist", "Modern Left", "Corporate Box", and "Premium Card" (featuring a top article info card, Reading Path TOC, chapter numbering, and call-to-action footer). Customize the primary color with an integrated Hex color picker, plus dynamic font size and line-height controls. See [CHANGELOG.md](CHANGELOG.md) for version history.
 *   **WeChat Layout Compatibility Filters**:
@@ -79,3 +79,11 @@ If you encounter any issues or wish to discuss legal AI, self-media creation, or
 | WeChat Official Account | Personal WeChat |
 | :---: | :---: |
 | <img src="assets/qrcode_mp.png" width="220" alt="WeChat Official Account"/> <br> **WeChat Account: Mingtalk** | <img src="assets/qrcode_personal.png" width="220" alt="Personal WeChat"/> <br> **Personal WeChat: Maxwell** |
+
+*   **Commercial Licensing Email**: `maxwell.m.zhu@outlook.com`
+
+---
+
+<div align="center">
+  <img src="assets/business_card.png" width="460" alt="铭泽律师 Maxwell"/>
+</div>
