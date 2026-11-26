@@ -1,8 +1,8 @@
 /*
- * Obsidian WeChat Publisher
+ * WePress (原 Obsidian WeChat Publisher)
  * 开发制作: 铭泽律师 (Maxwell)
  * 插件描述: 专为法律人与创作者设计的本地微信公众号草稿箱一键渲染与同步工具。
- * 开源许可: MIT License (完全免费，支持自由分发与修改，请保留作者署名)。
+ * 开源许可: Non-Commercial Open Source License (仅限个人学习、研究与公益非商用，严禁任何形式的商业售卖、付费打包或商业集成；分发与修改须保留作者「铭泽律师 (Maxwell)」署名)。
  */
 const { Plugin, PluginSettingTab, Setting, Notice, MarkdownRenderer, Component, ItemView } = require('obsidian');
 const fs = require('fs');
@@ -1437,10 +1437,10 @@ class WeChatPublisherSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl('h2', { text: '微信公众号草稿箱一键同步配置' });
+    containerEl.createEl('h2', { text: 'WePress 微信公众号草稿箱一键同步配置' });
 
     containerEl.createEl('p', {
-      text: '由 铭泽律师 (Maxwell) 开发制作，旨在为法律人与自媒体创作者提供高效、安全的本地微信排版与一键同步工具。本插件完全免费，所有密钥均本地化存储，保障数据隐私。',
+      text: '由 铭泽律师 (Maxwell) 开发制作，旨在为法律人与自媒体创作者提供高效、安全的本地微信排版与一键同步工具。本插件仅供个人与公益非商用免费使用（严禁商业售卖或未授权商用），所有密钥均本地化存储，保障数据隐私。',
       attr: { style: 'font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;' }
     });
 

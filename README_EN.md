@@ -50,7 +50,7 @@ This plugin undergoes rigorous security checks to guarantee your privacy:
 
 <h2 align="center">✨ Key Features & Advantages</h2>
 
-*   **MIT Licensed & Free**: Developed by **Maxwell (Mingze)** for legal professionals and self-media creators, distributed as public welfare open-source software.
+*   **Non-Commercial Open Source & Attribution**: Developed by **铭泽律师 (Maxwell)** for legal professionals and creators. Free for personal, research, and non-profit use; **commercial sale, paid bundling, or unauthorized commercial use is strictly prohibited**, and original author attribution must be retained (see [LICENSE](LICENSE)).
 *   **Side-by-Side Live Preview**: Open an interactive mobile simulator inside Obsidian that aligns 100% with the WeChat layout. Visual rendering updates instantly as you edit, saving you from repetitive copy-pasting.
 *   **Four Curated Layout Presets**: Built-in "Minimalist", "Modern Left", "Corporate Box", and "Premium Card" (featuring a top article info card, Reading Path TOC, chapter numbering, and call-to-action footer). Customize the primary color with an integrated Hex color picker, plus dynamic font size and line-height controls. See [CHANGELOG.md](CHANGELOG.md) for version history.
 *   **WeChat Layout Compatibility Filters**:

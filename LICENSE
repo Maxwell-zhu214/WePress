@@ -1,21 +1,18 @@
-MIT License
+WePress Non-Commercial Open Source License
 
-Copyright (c) 2026 铭泽律师 (Maxwell)
+Copyright (c) 2026 铭泽律师 (Maxwell). All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Author Attribution
+This software ("WePress", formerly "Obsidian WeChat Publisher") is created and maintained by 铭泽律师 (Maxwell). Any copy, fork, derivative work, or redistribution of the source code or compiled artifacts must clearly retain the original author attribution: "铭泽律师 (Maxwell)" and this license notice.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. Permitted Non-Commercial Use
+Permission is hereby granted, free of charge, to any individual or non-profit organization to use, copy, modify, and distribute this software solely for personal, educational, research, or non-commercial public-interest purposes, subject to the attribution requirement in Section 1.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. Prohibition of Commercial Use
+Without prior written authorization from 铭泽律师 (Maxwell), commercial use of this software or any derivative work is strictly prohibited, including but not limited to:
+- Selling, sublicensing, or charging fees for this plugin or modified versions of it;
+- Bundling, embedding, or repackaging this software into commercial products, paid templates, paid courses, or SaaS services;
+- Removing or altering the author attribution or license notice.
+
+4. Disclaimer of Warranty
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
