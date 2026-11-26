@@ -16,20 +16,25 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 
 <h2 align="center">📷 功能效果预览 (Screenshots)</h2>
 
-![双栏排版实时预览与微信端模拟器](assets/screenshot_preview.png)
+<div align="center">
+  <img src="assets/screenshot_preview.png" alt="双栏排版实时预览与微信端模拟器"/>
+</div>
 
 <h3 align="center">🎨 四套内置排版风格对比 (Layout Styles)</h3>
 
-<table align="center">
-  <tr>
-    <td align="center"><b>极细线框风 (Minimalist)</b><br><img src="assets/style_minimalist.png" width="320" alt="极细线框风"/></td>
-    <td align="center"><b>现代左竖风 (Modern Left)</b><br><img src="assets/style_modern_left.png" width="320" alt="现代左竖风"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>商务色块风 (Corporate Box)</b><br><img src="assets/style_corporate_box.png" width="320" alt="商务色块风"/></td>
-    <td align="center"><b>高级卡片风 (Premium Card)</b><br><img src="assets/style_premium_card.png" width="320" alt="高级卡片风"/></td>
-  </tr>
-</table>
+<div align="center">
+  <img src="assets/style_minimalist.png" width="320" alt="极细线框风"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/style_modern_left.png" width="320" alt="现代左竖风"/>
+  <br>
+  <b>左上：极细线框风 (Minimalist)</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>右上：现代左竖风 (Modern Left)</b>
+  <br><br>
+  <img src="assets/style_corporate_box.png" width="320" alt="商务色块风"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/style_premium_card.png" width="320" alt="高级卡片风"/>
+  <br>
+  <b>左下：商务色块风 (Corporate Box)</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>右下：高级卡片风 (Premium Card)</b>
+</div>
 
 
 ---

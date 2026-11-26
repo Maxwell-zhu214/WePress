@@ -16,20 +16,25 @@ WePress is an open-source Obsidian plugin designed to format and seamlessly sync
 
 <h2 align="center">📷 Screenshots</h2>
 
-![Split-screen live preview and WeChat simulator](assets/screenshot_preview.png)
+<div align="center">
+  <img src="assets/screenshot_preview.png" alt="Split-screen live preview and WeChat simulator"/>
+</div>
 
 <h3 align="center">🎨 Built-in Layout Styles</h3>
 
-<table align="center">
-  <tr>
-    <td align="center"><b>Minimalist (极细线框风)</b><br><img src="assets/style_minimalist.png" width="320" alt="Minimalist"/></td>
-    <td align="center"><b>Modern Left (现代左竖风)</b><br><img src="assets/style_modern_left.png" width="320" alt="Modern Left"/></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Corporate Box (商务色块风)</b><br><img src="assets/style_corporate_box.png" width="320" alt="Corporate Box"/></td>
-    <td align="center"><b>Premium Card (高级卡片风)</b><br><img src="assets/style_premium_card.png" width="320" alt="Premium Card"/></td>
-  </tr>
-</table>
+<div align="center">
+  <img src="assets/style_minimalist.png" width="320" alt="Minimalist"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/style_modern_left.png" width="320" alt="Modern Left"/>
+  <br>
+  <b>Top Left: Minimalist (极细线框风)</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Top Right: Modern Left (现代左竖风)</b>
+  <br><br>
+  <img src="assets/style_corporate_box.png" width="320" alt="Corporate Box"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/style_premium_card.png" width="320" alt="Premium Card"/>
+  <br>
+  <b>Bottom Left: Corporate Box (商务色块风)</b> &nbsp;&nbsp;|&nbsp;&nbsp; <b>Bottom Right: Premium Card (高级卡片风)</b>
+</div>
 
 
 ---
