@@ -14,14 +14,6 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 
 ---
 
-<h2 align="center">👨‍💼 关于作者 (About the Author)</h2>
-
-<div align="center">
-  <img src="assets/brand_profile.png" width="500" alt="关于作者"/>
-</div>
-
----
-
 <h2 align="center">📷 功能效果预览 (Screenshots)</h2>
 
 ![双栏排版实时预览与微信端模拟器](assets/screenshot_preview.png)
@@ -83,6 +75,8 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 *   **商业授权联系邮箱**：`maxwell.m.zhu@outlook.com`
 
 ---
+
+<h2 align="center">👨‍💼 关于作者 (About the Author)</h2>
 
 <div align="center">
   <img src="assets/business_card.png" width="460" alt="铭泽律师 Maxwell 名片"/>

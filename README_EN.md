@@ -14,14 +14,6 @@ WePress is an open-source Obsidian plugin designed to format and seamlessly sync
 
 ---
 
-<h2 align="center">👨‍💼 About the Author</h2>
-
-<div align="center">
-  <img src="assets/brand_profile.png" width="500" alt="About the Author"/>
-</div>
-
----
-
 <h2 align="center">📷 Screenshots</h2>
 
 ![Split-screen live preview and WeChat simulator](assets/screenshot_preview.png)
@@ -83,6 +75,8 @@ If you encounter any issues or wish to discuss legal AI, self-media creation, or
 *   **Commercial Licensing Email**: `maxwell.m.zhu@outlook.com`
 
 ---
+
+<h2 align="center">👨‍💼 About the Author</h2>
 
 <div align="center">
   <img src="assets/business_card.png" width="460" alt="铭泽律师 Maxwell"/>
