@@ -77,17 +77,416 @@ class WeChatPublisherPlugin extends Plugin {
     });
   }
 
+  buildDigest(frontMatter, markdownBody) {
+    const explicitDigest = frontMatter?.digest || frontMatter?.推送摘要;
+    const sourceText = explicitDigest || markdownBody
+      .split(/\r?\n{2,}/)
+      .map(block => block.trim())
+      .find(block => (
+        block &&
+        !/^!?\[\[/.test(block) &&
+        !/^!\[.*?\]\(.*?\)$/.test(block) &&
+        !/^---+$/.test(block) &&
+        !/^#{1,6}\s+/.test(block)
+      )) || '';
+
+    const digest = sourceText
+      .replace(/^>\s*/gm, '')
+      .replace(/!\[[^\]]*?\]\([^)]+?\)/g, '')
+      .replace(/\[([^\]]+?)\]\([^)]+?\)/g, '$1')
+      .replace(/[#*_`>\-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!digest) return '';
+    return digest.length > 118 ? `${digest.slice(0, 115)}...` : digest;
+  }
+
+  removeAutoDigestSourceBlock(tempEl, frontMatter) {
+    if (frontMatter?.digest || frontMatter?.推送摘要) return;
+
+    const isImageOnlyBlock = (el) => el.querySelector?.('img') && !el.textContent.trim();
+    const isIgnorableBlock = (el) => (
+      el.nodeType === Node.TEXT_NODE && !el.textContent.trim()
+    ) || (
+      el.nodeType === Node.ELEMENT_NODE && (
+        el.tagName === 'HR' ||
+        isImageOnlyBlock(el) ||
+        (!el.textContent.trim() && !el.querySelector?.('img'))
+      )
+    );
+
+    const children = Array.from(tempEl.childNodes);
+    for (const child of children) {
+      if (child.nodeType !== Node.ELEMENT_NODE) {
+        if (isIgnorableBlock(child)) continue;
+        return;
+      }
+
+      if (/^H[1-6]$/.test(child.tagName)) return;
+      if (isIgnorableBlock(child)) continue;
+
+      if (['P', 'BLOCKQUOTE'].includes(child.tagName)) {
+        const next = child.nextSibling;
+        child.remove();
+        if (next?.nodeType === Node.ELEMENT_NODE && next.tagName === 'HR') {
+          next.remove();
+        }
+      }
+      return;
+    }
+  }
+
+
+  transformPremiumHeadings(tempEl, primaryColor, fontStack, frontMatter, title, digest) {
+    // === 1. WORD COUNT & READING TIME ===
+    const plainText = tempEl.textContent.replace(/\s+/g, '');
+    const wordCount = plainText.length;
+    const readTime = Math.max(1, Math.ceil(wordCount / 400));
+    
+    // === 2. GATHER CATEGORY & TAGS ===
+    const category = frontMatter?.column_name || frontMatter?.category || frontMatter?.topic || '深度长文';
+    let tagsStr = '';
+    if (frontMatter?.tags) {
+        let tagArr = [];
+        if (Array.isArray(frontMatter.tags)) {
+            tagArr = frontMatter.tags.filter(t => typeof t === 'string' && !t.includes('/'));
+        } else if (typeof frontMatter.tags === 'string') {
+            tagArr = frontMatter.tags.split(',').map(t => t.trim()).filter(t => !t.includes('/'));
+        }
+        tagsStr = tagArr.map(t => `#${t}`).join(' ');
+    }
+    
+    // === 3. INJECT TITLE CARD ===
+    const titleCard = document.createElement('section');
+    titleCard.setAttribute('style', `margin: 20px 0 40px 0; padding: 24px 20px; border-radius: 12px; border: 1px solid #f0f0f0; box-shadow: 0 8px 24px rgba(0,0,0,0.03); background-color: #ffffff; display: flex; justify-content: space-between; align-items: flex-start; font-family: ${fontStack};`);
+    
+    const leftPart = document.createElement('section');
+    leftPart.setAttribute('style', 'flex: 1; margin-right: 16px; display: flex; flex-direction: column;');
+    
+    const catEl = document.createElement('span');
+    catEl.setAttribute('style', `font-size: 11px; font-weight: 800; color: ${primaryColor}; letter-spacing: 2px; margin-bottom: 12px;`);
+    catEl.textContent = category;
+    
+    const titleEl = document.createElement('span');
+    titleEl.setAttribute('style', 'font-size: 26px; font-weight: 900; line-height: 1.35; color: #1a202c; margin-bottom: 16px; letter-spacing: -0.5px;');
+    titleEl.textContent = title;
+    
+    const digestEl = document.createElement('span');
+    digestEl.setAttribute('style', 'font-size: 14px; color: #718096; line-height: 1.6; margin-bottom: 20px; font-weight: 400; text-align: justify;');
+    digestEl.textContent = digest;
+    
+    const tagsEl = document.createElement('span');
+    tagsEl.setAttribute('style', `font-size: 12px; font-weight: 600; color: #4a5568; line-height: 1.5;`);
+    tagsEl.textContent = tagsStr;
+    
+    leftPart.appendChild(catEl);
+    leftPart.appendChild(titleEl);
+    leftPart.appendChild(digestEl);
+    if (tagsStr) leftPart.appendChild(tagsEl);
+    
+    const rightPart = document.createElement('section');
+    rightPart.setAttribute('style', 'display: flex; flex-direction: column; align-items: center; width: 68px; flex-shrink: 0;');
+    
+    const timeLabel = document.createElement('span');
+    timeLabel.setAttribute('style', 'font-size: 10px; color: #a0aec0; margin-bottom: 8px; white-space: nowrap;');
+    timeLabel.textContent = '预计阅读(分)';
+    
+    const timeBox = document.createElement('section');
+    timeBox.setAttribute('style', `width: 60px; height: 60px; background-color: ${primaryColor}; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px;`);
+    
+    const timeNum = document.createElement('span');
+    timeNum.setAttribute('style', 'font-size: 32px; font-weight: bold; color: #ffffff; line-height: 1;');
+    timeNum.textContent = readTime.toString();
+    timeBox.appendChild(timeNum);
+    
+    const wordLabel = document.createElement('span');
+    wordLabel.setAttribute('style', 'font-size: 10px; color: #a0aec0; white-space: nowrap;');
+    wordLabel.textContent = `共 ${wordCount} 字`;
+    
+    rightPart.appendChild(timeLabel);
+    rightPart.appendChild(timeBox);
+    rightPart.appendChild(wordLabel);
+    
+    titleCard.appendChild(leftPart);
+    titleCard.appendChild(rightPart);
+
+    // === 4. PROCESS HEADINGS (按文档顺序统一遍历，遇到大标题必定重置小标题计数器) & GATHER TOC ===
+    let h2Index = 1;
+    let h3Index = 1;
+    const h2Titles = [];
+
+    const allHeadings = Array.from(tempEl.querySelectorAll('h1, h2, h3, h4'));
+    if (allHeadings.length > 0) {
+      const isDocumentTitleHeading = (el, idx) => (
+        idx === 0 &&
+        el.tagName === 'H1' &&
+        allHeadings.length > 1 &&
+        el.textContent.trim() === title
+      );
+      const contentHeadings = allHeadings.filter((el, idx) => !isDocumentTitleHeading(el, idx));
+      const contentLevels = contentHeadings.map(el => parseInt(el.tagName.substring(1), 10));
+      const mainHeaderLevel = contentLevels.length > 0 ? Math.min(...contentLevels) : null;
+      let currentMainHeaderLevel = null;
+
+      allHeadings.forEach((el, idx) => {
+        const rawText = el.textContent.trim();
+        const level = parseInt(el.tagName.substring(1), 10);
+        const isMainHeader = !isDocumentTitleHeading(el, idx) && level === mainHeaderLevel;
+
+        if (isMainHeader) {
+          // 遇到任何新的大标题，首先无条件重置小标题计数器
+          h3Index = 1;
+          currentMainHeaderLevel = level;
+
+          // 跳过系统标题 (关于作者、参考资料等) 的卡片转换
+          if (['关于作者', '参考资料', '写在最后', '互动'].includes(rawText)) {
+            return;
+          }
+
+          h2Titles.push(rawText);
+          const numStr = String(h2Index).padStart(2, '0');
+
+          const section = document.createElement('section');
+          section.setAttribute('data-block', 'ptitle');
+          section.setAttribute('style', `margin:40px 0px 24px; font-family: ${fontStack};`);
+
+          const innerSection1 = document.createElement('section');
+          innerSection1.setAttribute('style', 'clear:both');
+
+          const headerFlex = document.createElement('section');
+          headerFlex.setAttribute('style', 'display:flex;align-items:center;margin:0;padding-bottom:12px');
+
+          const chapSpan = document.createElement('span');
+          chapSpan.setAttribute('style', 'font-size:10px;font-weight:800;color:rgb(148,163,184);letter-spacing:2.6px;text-transform:uppercase;white-space:nowrap');
+          chapSpan.textContent = `CHAPTER ${numStr}`;
+
+          const lineSection = document.createElement('section');
+          lineSection.setAttribute('style', 'flex:1;border-top:1px solid rgb(229,231,235);margin:0 0 0 12px;height:0');
+
+          headerFlex.appendChild(chapSpan);
+          headerFlex.appendChild(lineSection);
+
+          const textSection = document.createElement('section');
+          textSection.setAttribute('style', 'margin:0');
+
+          const hugeNum = document.createElement('span');
+          hugeNum.setAttribute('style', `display:block;font-size:60px;line-height:1;color:${primaryColor};letter-spacing:-3px;white-space:nowrap;opacity:0.25;font-weight:bold;`);
+          hugeNum.textContent = numStr;
+
+          const mainText = document.createElement('span');
+          mainText.setAttribute('style', 'display:block;font-size:30px;font-weight:900;color:rgb(17,24,39);line-height:1.26;letter-spacing:-0.8px;margin-top:-60px;margin-left:50px');
+          mainText.textContent = rawText;
+
+          const subTitle = document.createElement('span');
+          subTitle.setAttribute('style', `display:block;margin-left:50px;font-size:11px;color:${primaryColor};font-weight:700;text-transform:uppercase;letter-spacing:1.6px;margin-top:4px;`);
+          subTitle.textContent = 'SECTION · 章节';
+
+          textSection.appendChild(hugeNum);
+          textSection.appendChild(mainText);
+          textSection.appendChild(subTitle);
+
+          innerSection1.appendChild(headerFlex);
+          innerSection1.appendChild(textSection);
+
+          section.appendChild(innerSection1);
+
+          el.parentNode.replaceChild(section, el);
+          h2Index++;
+        } else if (currentMainHeaderLevel !== null && level > currentMainHeaderLevel && level <= currentMainHeaderLevel + 2) {
+          const numStr = String(h3Index).padStart(2, '0');
+
+          // 自动清理小标题原本可能夹带的形如 "02 " 或 "1. " 或 "01. " 的冗余序号前缀
+          const cleanText = rawText.replace(/^(?:0?[1-9]\d*[\.、\s]+|0[1-9]\s+|[（(]?[一二三四五六七八九十]+[）)、\.\s]+)/, '');
+
+          const section = document.createElement('section');
+          section.setAttribute('data-block', 'ptitle');
+          section.setAttribute('style', `margin:32px 0px 20px;overflow:hidden; font-family: ${fontStack}; display: flex; align-items: flex-start;`);
+
+          const numSection = document.createElement('span');
+          numSection.setAttribute('style', `white-space:nowrap;font-size:24px;font-weight:900;color:${primaryColor};line-height:1.4;letter-spacing:-0.3px;margin-right:12px;`);
+          numSection.textContent = numStr;
+
+          const textSection = document.createElement('span');
+          textSection.setAttribute('style', 'display:block;font-size:24px;font-weight:800;color:rgb(17,24,39);line-height:1.4;letter-spacing:-0.3px');
+          textSection.textContent = cleanText;
+
+          section.appendChild(numSection);
+          section.appendChild(textSection);
+
+          el.parentNode.replaceChild(section, el);
+          h3Index++;
+        }
+      });
+    }
+
+    // === 5. INJECT READING PATH TOC ===
+    let tocWrapper = null;
+    if (h2Titles.length > 0) {
+      tocWrapper = document.createElement('section');
+      tocWrapper.setAttribute('style', `margin: 32px 0 40px 0; font-family: ${fontStack};`);
+      
+      const tocHeader = document.createElement('section');
+      tocHeader.setAttribute('style', 'display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;');
+      
+      const tocTitleGroup = document.createElement('section');
+      
+      const tocEng = document.createElement('span');
+      tocEng.setAttribute('style', 'display: block; font-size: 10px; font-weight: 800; color: #718096; letter-spacing: 3px; margin-bottom: 4px;');
+      tocEng.textContent = 'READING PATH';
+      
+      const tocChs = document.createElement('span');
+      tocChs.setAttribute('style', 'display: block; font-size: 20px; font-weight: 900; color: #1a202c;');
+      tocChs.textContent = '阅读路线';
+      
+      tocTitleGroup.appendChild(tocEng);
+      tocTitleGroup.appendChild(tocChs);
+      
+      const tocCount = document.createElement('span');
+      tocCount.setAttribute('style', 'font-size: 12px; color: #a0aec0;');
+      tocCount.textContent = `${h2Titles.length} 个章节`;
+      
+      tocHeader.appendChild(tocTitleGroup);
+      tocHeader.appendChild(tocCount);
+      
+      const tocBox = document.createElement('section');
+      tocBox.setAttribute('style', 'border: 1px solid #edf2f7; border-radius: 12px; padding: 24px 20px; background-color: #fcfcfd; display: flex; flex-direction: row; flex-wrap: nowrap; overflow-x: auto;');
+      
+      h2Titles.forEach((title, idx) => {
+        const item = document.createElement('section');
+        item.setAttribute('style', 'display: flex; flex-direction: column; align-items: center; min-width: 100px; max-width: 140px; margin-right: 20px; flex-shrink: 0;');
+        
+        // Circular number
+        const numCircle = document.createElement('section');
+        numCircle.setAttribute('style', `width: 36px; height: 36px; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; margin-bottom: 12px; border: 1px solid ${idx === 0 ? primaryColor : '#e2e8f0'}; background-color: ${idx === 0 ? primaryColor : '#ffffff'}; color: ${idx === 0 ? '#ffffff' : '#4a5568'};`);
+        numCircle.textContent = String(idx + 1).padStart(2, '0');
+        
+        // Title Text
+        const titleText = document.createElement('span');
+        titleText.setAttribute('style', 'font-size: 13px; font-weight: bold; color: #2d3748; text-align: center; line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;');
+        titleText.textContent = title;
+        
+        item.appendChild(numCircle);
+        item.appendChild(titleText);
+        tocBox.appendChild(item);
+      });
+      
+      tocWrapper.appendChild(tocHeader);
+      tocWrapper.appendChild(tocBox);
+    }
+      
+    // Find where to insert (after the cover image if it exists at the top)
+    let insertRef = tempEl.firstChild;
+    const firstImg = tempEl.querySelector('img');
+    if (firstImg) {
+      let imgWrapper = firstImg;
+      while (imgWrapper.parentElement && imgWrapper.parentElement !== tempEl) {
+        imgWrapper = imgWrapper.parentElement;
+      }
+      
+      let isAtTop = false;
+      let child = tempEl.firstChild;
+      for (let i = 0; i < 3 && child; i++) {
+        if (child === imgWrapper) {
+          isAtTop = true;
+          break;
+        }
+        child = child.nextSibling;
+      }
+      
+      if (isAtTop) {
+        insertRef = imgWrapper.nextSibling;
+      }
+    }
+    
+    // Insert TitleCard first, then TOC (so TOC is below TitleCard)
+    tempEl.insertBefore(titleCard, insertRef);
+    if (h2Titles.length > 0) {
+      tempEl.insertBefore(tocWrapper, insertRef);
+    }
+
+    // === 6. INJECT INTERACTION FOOTER ===
+    const footerCard = document.createElement('section');
+    footerCard.setAttribute('style', `margin: 60px 0 20px 0; padding: 40px 20px; border-radius: 16px; border: 1px dashed #e2e8f0; background-color: #fbfdfd; font-family: ${fontStack}; text-align: center;`);
+
+    const thanksTitle = document.createElement('p');
+    thanksTitle.setAttribute('style', 'font-size: 18px; font-weight: 900; color: #1a202c; margin-bottom: 8px; letter-spacing: 0.5px;');
+    thanksTitle.textContent = '感谢你的阅读与支持！';
+
+    const thanksSub = document.createElement('p');
+    thanksSub.setAttribute('style', 'font-size: 13px; color: #718096; margin-bottom: 32px; letter-spacing: 0.5px;');
+    thanksSub.textContent = '喜欢就互动一下吧~ ❤️';
+    
+    footerCard.appendChild(thanksTitle);
+    footerCard.appendChild(thanksSub);
+
+    const actionRow = document.createElement('section');
+    actionRow.setAttribute('style', 'display: flex; justify-content: center; align-items: flex-start;');
+
+    const createActionColumn = (iconEmoji, iconBgColor, titleStr, titleColor, descStr, lineBgColor, showDivider) => {
+      const col = document.createElement('section');
+      col.setAttribute('style', `display: flex; flex-direction: column; align-items: center; flex: 1; ${showDivider ? 'border-right: 1px dashed #e2e8f0;' : ''}`);
+
+      const iconBox = document.createElement('section');
+      iconBox.setAttribute('style', `width: 52px; height: 52px; border-radius: 26px; background-color: ${iconBgColor}; display: flex; justify-content: center; align-items: center; font-size: 22px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);`);
+      iconBox.textContent = iconEmoji;
+
+      const titleLine = document.createElement('p');
+      titleLine.setAttribute('style', `font-size: 16px; font-weight: bold; color: ${titleColor}; margin-bottom: 12px; letter-spacing: 2px;`);
+      titleLine.textContent = titleStr;
+
+      const bottomLine = document.createElement('section');
+      bottomLine.setAttribute('style', `width: 24px; height: 3px; border-radius: 2px; background-color: ${lineBgColor};`);
+
+      col.appendChild(iconBox);
+      col.appendChild(titleLine);
+      col.appendChild(bottomLine);
+      
+      return col;
+    };
+
+    const likeCol = createActionColumn('👍', '#fff5f5', '点赞', '#e53e3e', '#feb2b2', true);
+    const shareCol = createActionColumn('↗️', '#f0fff4', '转发', '#38a169', '#9ae6b4', true);
+    const heartCol = createActionColumn('💛', '#fffff0', '推荐', '#d69e2e', '#f6e05e', false);
+
+    actionRow.appendChild(likeCol);
+    actionRow.appendChild(shareCol);
+    actionRow.appendChild(heartCol);
+    
+    footerCard.appendChild(actionRow);
+    
+    let disclaimerNode = null;
+    const pNodes = tempEl.querySelectorAll('p, blockquote, div');
+    pNodes.forEach(node => {
+      if (node.textContent.includes('不构成个案法律意见')) {
+        disclaimerNode = node;
+      }
+    });
+
+    if (disclaimerNode) {
+      tempEl.insertBefore(footerCard, disclaimerNode);
+    } else {
+      tempEl.appendChild(footerCard);
+    }
+  }
+
   sanitizeListsForWeChat(tempEl) {
+    const normalizeText = (text) => text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+
+    tempEl.querySelectorAll('button, .copy-code-button, .markdown-rendered button').forEach(el => el.remove());
+
     tempEl.querySelectorAll('li').forEach(li => {
       const childNodes = Array.from(li.childNodes);
       const fragment = document.createDocumentFragment();
       
-      childNodes.forEach(child => {
+      childNodes.forEach((child, idx) => {
         if (child.nodeName === 'P') {
+          if (fragment.childNodes.length > 0 && idx > 0) {
+            fragment.appendChild(document.createElement('br'));
+          }
           while (child.firstChild) {
             fragment.appendChild(child.firstChild);
           }
-          fragment.appendChild(document.createElement('br'));
           child.remove();
         } else {
           fragment.appendChild(child);
@@ -105,6 +504,57 @@ class WeChatPublisherPlugin extends Plugin {
         lastChild = lastChild.previousSibling;
         toRemove.remove();
       }
+
+      if (!normalizeText(li.textContent) && li.querySelectorAll('img').length === 0) {
+        li.remove();
+      }
+    });
+
+    tempEl.querySelectorAll('ul, ol').forEach(list => {
+      Array.from(list.childNodes).forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE || node.nodeName === 'BR') {
+          node.remove();
+        }
+      });
+
+      if (!normalizeText(list.textContent) && list.querySelectorAll('img').length === 0) {
+        list.remove();
+      }
+    });
+
+    tempEl.querySelectorAll('ul, ol').forEach(list => {
+      const isOrdered = list.tagName === 'OL';
+      const wrapper = document.createElement('section');
+      wrapper.setAttribute('style', 'margin:12px 0 20px 0;padding:0;');
+
+      Array.from(list.children).forEach((li, idx) => {
+        if (li.tagName !== 'LI') return;
+        if (!normalizeText(li.textContent) && li.querySelectorAll('img').length === 0) return;
+
+        const row = document.createElement('section');
+        row.setAttribute('style', 'display:flex;align-items:flex-start;margin:0 0 10px 0;padding:0;');
+
+        const marker = document.createElement('span');
+        marker.setAttribute('style', 'display:inline-block;min-width:18px;margin-right:6px;color:rgb(51,65,85);line-height:inherit;font-weight:400;');
+        marker.textContent = isOrdered ? `${idx + 1}.` : '•';
+
+        const body = document.createElement('span');
+        body.setAttribute('style', 'display:inline;flex:1;min-width:0;');
+
+        while (li.firstChild) {
+          body.appendChild(li.firstChild);
+        }
+
+        row.appendChild(marker);
+        row.appendChild(body);
+        wrapper.appendChild(row);
+      });
+
+      if (wrapper.childNodes.length > 0) {
+        list.parentNode.replaceChild(wrapper, list);
+      } else {
+        list.remove();
+      }
     });
   }
 
@@ -121,6 +571,31 @@ class WeChatPublisherPlugin extends Plugin {
         el.remove();
       }
     });
+  }
+
+  convertDivsToSections(tempEl) {
+    // 微信公众号草稿箱会剥离 <div> 的内联样式，但保留 <section> 的样式
+    // 将用户手写的 <div>（如"关于作者"、金句卡片等 HTML 块）统一转换为 <section>，保留全部属性与子节点
+    const divs = tempEl.querySelectorAll('div');
+    console.log('[WeChat Publisher] convertDivsToSections called, found', divs.length, 'div(s)');
+    divs.forEach(div => {
+      const section = document.createElement('section');
+      for (const attr of Array.from(div.attributes)) {
+        section.setAttribute(attr.name, attr.value);
+      }
+      while (div.firstChild) {
+        section.appendChild(div.firstChild);
+      }
+      div.parentNode.replaceChild(section, div);
+    });
+  }
+
+  convertDivsToSectionsInString(html) {
+    // 字符串级别的兜底转换：确保最终 HTML 中没有 <div>，全部替换为 <section>
+    // 微信公众号草稿箱会剥离 <div> 的内联样式，但保留 <section> 的样式
+    return html
+      .replace(/<div\b/gi, '<section')
+      .replace(/<\/div>/gi, '</section>');
   }
 
   convertLinksToFootnotes(tempEl) {
@@ -159,7 +634,7 @@ class WeChatPublisherPlugin extends Plugin {
       tempEl.appendChild(footnoteTitle);
       
       const list = document.createElement('ol');
-      list.setAttribute('style', 'margin: 12px 0 20px 22px; padding: 0; line-height: 1.6; font-size: 14px; color: #666666; font-family: sans-serif;');
+      list.setAttribute('style', 'margin: 12px 0 20px 22px; padding: 0; line-height: 1.6; font-size: ${baseFs - 2}px; color: #666666; font-family: sans-serif;');
       
       links.forEach((link, idx) => {
         const li = document.createElement('li');
@@ -371,9 +846,8 @@ class WeChatPublisherPlugin extends Plugin {
       const frontMatter = this.app.metadataCache.getFileCache(activeFile)?.frontmatter || {};
 
       // Parse metadata
-      const title = frontMatter.topic || frontMatter.title || activeFile.basename;
+      let title = frontMatter.topic || frontMatter.title || activeFile.basename;
       const author = frontMatter.persona || frontMatter.author || defaultAuthor || '作者';
-      const digest = frontMatter.digest || frontMatter.推送摘要 || fileContent.slice(0, 120).replace(/[\s\r\n#*`>-]+/g, ' ').trim() + '...';
 
       // Remove front matter
       let markdownBody = fileContent;
@@ -382,6 +856,7 @@ class WeChatPublisherPlugin extends Plugin {
       if (match) {
         markdownBody = fileContent.slice(match[0].length);
       }
+      const digest = this.buildDigest(frontMatter, markdownBody);
 
       // Render Markdown to DOM
       const tempEl = document.createElement('div');
@@ -393,6 +868,15 @@ class WeChatPublisherPlugin extends Plugin {
       this.convertLinksToFootnotes(tempEl);
       this.sanitizeListsForWeChat(tempEl);
       this.cleanEmptyParagraphs(tempEl);
+      this.convertDivsToSections(tempEl);
+      if (layoutMode === 'premium_card') {
+        this.removeAutoDigestSourceBlock(tempEl, frontMatter);
+      }
+
+      const h1Node = tempEl.querySelector('h1');
+      if (h1Node) {
+        title = h1Node.textContent.trim();
+      }
 
       // Extract and Upload Images
       const imgEls = tempEl.querySelectorAll('img');
@@ -432,7 +916,7 @@ class WeChatPublisherPlugin extends Plugin {
           throw new Error(`封面上传失败: ${coverData.errmsg}`);
         }
         thumbMediaId = coverData.media_id;
-        imagesCache[coverImgPath] = thumbMediaId;
+        imagesCache[coverImgPath] = coverData.url; // Use URL for body rendering, not media_id!
       }
 
       // Upload other inline images with progress feedback
@@ -465,49 +949,71 @@ class WeChatPublisherPlugin extends Plugin {
       let tdStyle = '';
       let codeBlockStyle = '';
       let inlineCodeStyle = '';
+      const baseFs = (this.plugin ? this.plugin.settings : this.settings)?.baseFontSize || 16;
+      const lh = (this.plugin ? this.plugin.settings : this.settings)?.lineHeight || 1.65;
       const fontStack = fontFamily === 'sans-serif' ? "system-ui, -apple-system, sans-serif" : (fontFamily === 'serif' ? "Georgia, STSong, serif" : "inherit");
 
       if (layoutMode === 'minimalist') {
-        h2Style = `color: ${primaryColor}; border-bottom: 2px solid ${primaryColor}; padding-bottom: 8px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 22px; letter-spacing: 1px; font-family: ${fontStack}; text-align: left;`;
-        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-left: 4px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #f8f8f8; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: 15px; border-radius: 4px; line-height: 1.7; letter-spacing: 0.5px;`;
-        pStyle = `font-size: 16px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        h2Style = `color: ${primaryColor}; border-bottom: 2px solid ${primaryColor}; padding-bottom: 8px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: ${baseFs + 6}px; letter-spacing: 1px; font-family: ${fontStack}; text-align: left;`;
+        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: ${baseFs + 2}px; border-left: 4px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #f8f8f8; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7; letter-spacing: 0.5px;`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: ${primaryColor}1a; border: 1px solid #e0e0e0; padding: 10px; font-weight: bold; text-align: left;`;
         tdStyle = `border: 1px solid #e0e0e0; padding: 10px; line-height: 1.5; color: #444444;`;
-        codeBlockStyle = `background-color: #f8f8f8; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0; border: 1px solid #eaeaea; color: #333333;`;
+        codeBlockStyle = `background-color: #f8f8f8; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0; border: 1px solid #eaeaea; color: #333333;`;
         inlineCodeStyle = `background-color: #f3f3f3; color: #c7254e; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
       } else if (layoutMode === 'modern_left') {
         h2Style = `color: #111111; border-left: 6px solid ${primaryColor}; padding-left: 14px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 23px; letter-spacing: 1px; font-family: ${fontStack};`;
         h3Style = `color: #222222; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 19px; border-left: 4px dashed ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #fcfcfc; border-left: 4px dashed ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: 15px; border-radius: 4px; line-height: 1.7;`;
-        pStyle = `font-size: 16px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #fcfcfc; border-left: 4px dashed ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7;`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: #f2f2f2; border: 1px solid #dddddd; padding: 10px; font-weight: bold; text-align: left; border-bottom: 2px solid ${primaryColor};`;
         tdStyle = `border: 1px solid #dddddd; padding: 10px; line-height: 1.5; color: #333333;`;
-        codeBlockStyle = `background-color: #272822; color: #f8f8f2; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0;`;
+        codeBlockStyle = `background-color: #272822; color: #f8f8f2; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0;`;
         inlineCodeStyle = `background-color: #f8f8f2; color: ${primaryColor}; border: 1px solid #e1e1e8; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
       } else if (layoutMode === 'corporate_box') {
-        h2Style = `background-color: ${primaryColor}; color: #ffffff; padding: 10px 16px; border-radius: 6px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 20px; letter-spacing: 1.5px; display: block; font-family: ${fontStack}; box-shadow: 0 2px 8px rgba(0,0,0,0.05);`;
-        h3Style = `color: ${primaryColor}; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-bottom: 1px dashed ${primaryColor}; padding-bottom: 6px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #4a5568; font-size: 15px; border-radius: 4px; line-height: 1.7;`;
-        pStyle = `font-size: 16px; line-height: 1.85; color: #2d3748; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.5px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        h2Style = `background-color: ${primaryColor}; color: #ffffff; padding: 10px 16px; border-radius: 6px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: ${baseFs + 4}px; letter-spacing: 1.5px; display: block; font-family: ${fontStack}; box-shadow: 0 2px 8px rgba(0,0,0,0.05);`;
+        h3Style = `color: ${primaryColor}; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: ${baseFs + 2}px; border-bottom: 1px dashed ${primaryColor}; padding-bottom: 6px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #4a5568; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7;`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.85; color: #2d3748; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.5px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: ${primaryColor}; color: #ffffff; border: 1px solid #e2e8f0; padding: 10px; font-weight: bold; text-align: left;`;
         tdStyle = `border: 1px solid #e2e8f0; padding: 10px; line-height: 1.5; color: #2d3748; background-color: #fcfdfd;`;
-        codeBlockStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; border-radius: 0 6px 6px 0; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0; color: #4a5568;`;
+        codeBlockStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; border-radius: 0 6px 6px 0; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0; color: #4a5568;`;
         inlineCodeStyle = `background-color: #edf2f7; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
+      } else if (layoutMode === 'premium_card') {
+        h2Style = `text-align: center; color: ${primaryColor}; margin-top: 48px; margin-bottom: 24px; font-weight: 800; font-size: 16px; letter-spacing: 4px; font-family: ${fontStack};`;
+        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-left: 3px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
+        quoteStyle = `margin:14px 0px;padding:12px 16px;background:rgb(247,248,252);border-left:3px solid ${primaryColor};border-radius:0px 6px 6px 0px;color:rgb(85,85,85);font-size:${baseFs - 1}px;line-height:${lh};font-family:${fontStack};`;
+        pStyle = `margin-bottom:1.2em;font-size:${baseFs}px;color:rgb(51,65,85);line-height:${lh};text-align:justify;overflow-wrap:break-word;font-family:${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 24px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack}; border: 1px solid rgb(229,231,235); border-radius: 8px; overflow: hidden;`;
+        thStyle = `background-color: rgb(248,250,252); border-bottom: 1px solid rgb(229,231,235); padding: 12px 10px; font-weight: bold; text-align: left; color: rgb(17,24,39);`;
+        tdStyle = `border-bottom: 1px solid rgb(229,231,235); padding: 10px; line-height: 1.5; color: rgb(71,85,105);`;
+        codeBlockStyle = `background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 24px 0; color: #334155;`;
+        inlineCodeStyle = `background-color: #f1f5f9; color: ${primaryColor}; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em; font-weight: 600;`;
       }
 
+            if (layoutMode === 'premium_card') {
+        const caller = this.plugin ? this.plugin : this;
+        caller.transformPremiumHeadings(tempEl, primaryColor, fontStack, frontMatter, title, digest);
+      }
       tempEl.querySelectorAll('h2').forEach(el => el.setAttribute('style', h2Style));
       tempEl.querySelectorAll('h3').forEach(el => el.setAttribute('style', h3Style));
-      tempEl.querySelectorAll('h4, h5, h6').forEach(el => el.setAttribute('style', `color: #222222; margin-top: 24px; margin-bottom: 12px; font-weight: bold; font-size: 16px; font-family: ${fontStack};`));
+      tempEl.querySelectorAll('h4, h5, h6').forEach(el => el.setAttribute('style', `color: #222222; margin-top: 24px; margin-bottom: 12px; font-weight: bold; font-size: ${baseFs}px; font-family: ${fontStack};`));
       tempEl.querySelectorAll('p').forEach(el => el.setAttribute('style', pStyle));
       tempEl.querySelectorAll('blockquote').forEach(el => el.setAttribute('style', quoteStyle));
-      tempEl.querySelectorAll('ul, ol').forEach(el => el.setAttribute('style', `margin: 12px 0 20px 22px; padding: 0; line-height: 1.8; font-size: 16px; color: #333333; letter-spacing: 0.5px; font-family: ${fontStack};`));
+      tempEl.querySelectorAll('ul, ol').forEach(el => el.setAttribute('style', `margin: 12px 0 20px 22px; padding: 0; line-height: ${lh}; font-size: ${baseFs}px; color: #333333; letter-spacing: 0.5px; font-family: ${fontStack};`));
       tempEl.querySelectorAll('li').forEach(el => el.setAttribute('style', "margin-bottom: 10px;"));
       tempEl.querySelectorAll('strong').forEach(el => el.setAttribute('style', `color: ${primaryColor}; font-weight: bold;`));
-      tempEl.querySelectorAll('hr').forEach(el => el.setAttribute('style', "border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;"));
+      tempEl.querySelectorAll('hr').forEach(el => {
+        if (layoutMode === 'premium_card') {
+          el.remove();
+        } else {
+          el.setAttribute('style', "border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;");
+        }
+      });
       tempEl.querySelectorAll('table').forEach(el => el.setAttribute('style', tableStyle));
       tempEl.querySelectorAll('th').forEach(el => el.setAttribute('style', thStyle));
       tempEl.querySelectorAll('td').forEach(el => el.setAttribute('style', tdStyle));
@@ -532,7 +1038,9 @@ class WeChatPublisherPlugin extends Plugin {
         img.setAttribute('style', "max-width: 100%; border-radius: 8px; display: block; margin: 24px auto; box-shadow: 0 4px 16px rgba(0,0,0,0.04);");
       });
 
-      const finalContentHtml = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; color: #333333; max-width: 677px; margin: 0 auto; padding: 15px; box-sizing: border-box;">${tempEl.innerHTML}</div>`;
+      const processedInnerHTML = this.convertDivsToSectionsInString(tempEl.innerHTML);
+      const finalContentHtml = `<section style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: ${baseFs}px; color: #333333; max-width: 677px; margin: 0 auto; padding: 15px; box-sizing: border-box;">${processedInnerHTML}</section>`;
+      console.log('[WeChat Publisher] Final HTML contains <div>:', finalContentHtml.includes('<div'), '| contains <section:', finalContentHtml.includes('<section'));
 
       if (!thumbMediaId) {
         throw new Error('缺少有效的封面图片 media_id，无法创建微信草稿。');
@@ -607,6 +1115,7 @@ class WeChatPreviewView extends ItemView {
     layoutSelect.createEl('option', { value: 'minimalist', text: '极细线框风' });
     layoutSelect.createEl('option', { value: 'modern_left', text: '现代左竖风' });
     layoutSelect.createEl('option', { value: 'corporate_box', text: '商务色块风' });
+    layoutSelect.createEl('option', { value: 'premium_card', text: '高级卡片风' });
     layoutSelect.value = this.plugin.settings.layoutMode;
     layoutSelect.onchange = async () => {
       this.plugin.settings.layoutMode = layoutSelect.value;
@@ -653,6 +1162,34 @@ class WeChatPreviewView extends ItemView {
       await this.updateContent();
     };
 
+    // Font Size Select
+    controlBar.createSpan({ text: '字号:', attr: { style: 'font-size: 13px; font-weight: 600; color: var(--text-normal); margin-left: 8px;' } });
+    const fsSelect = controlBar.createEl('select', { attr: { style: 'padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); background-color: var(--background-primary); font-size: 13px; color: var(--text-normal); cursor: pointer;' } });
+    fsSelect.createEl('option', { value: '14', text: '14px' });
+    fsSelect.createEl('option', { value: '15', text: '15px' });
+    fsSelect.createEl('option', { value: '16', text: '16px' });
+    fsSelect.createEl('option', { value: '17', text: '17px' });
+    fsSelect.createEl('option', { value: '18', text: '18px' });
+    fsSelect.value = String(this.plugin.settings.baseFontSize || 16);
+    fsSelect.onchange = async () => {
+      this.plugin.settings.baseFontSize = parseInt(fsSelect.value, 10);
+      await this.plugin.saveSettings();
+      await this.updateContent();
+    };
+
+    // Line Height Select
+    controlBar.createSpan({ text: '行距:', attr: { style: 'font-size: 13px; font-weight: 600; color: var(--text-normal); margin-left: 8px;' } });
+    const lhSelect = controlBar.createEl('select', { attr: { style: 'padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); background-color: var(--background-primary); font-size: 13px; color: var(--text-normal); cursor: pointer;' } });
+    lhSelect.createEl('option', { value: '1.5', text: '紧凑(1.5)' });
+    lhSelect.createEl('option', { value: '1.65', text: '推荐(1.65)' });
+    lhSelect.createEl('option', { value: '1.8', text: '宽松(1.8)' });
+    lhSelect.value = String(this.plugin.settings.lineHeight || 1.65);
+    lhSelect.onchange = async () => {
+      this.plugin.settings.lineHeight = parseFloat(lhSelect.value);
+      await this.plugin.saveSettings();
+      await this.updateContent();
+    };
+
     // Spacing
     const spacer = controlBar.createDiv({ attr: { style: 'flex: 1;' } });
 
@@ -684,7 +1221,7 @@ class WeChatPreviewView extends ItemView {
     simulatorFrame.setAttribute('style', 'border: 12px solid #2a2a2a; border-radius: 40px; padding: 28px 24px; width: 440px; min-height: 720px; background-color: #ffffff; box-shadow: 0 12px 36px rgba(0,0,0,0.15); box-sizing: border-box; margin-bottom: 24px;');
 
     this.simTitleEl = simulatorFrame.createEl('h1');
-    this.simTitleEl.setAttribute('style', 'font-size: 22px; font-weight: bold; line-height: 1.4; margin-top: 8px; margin-bottom: 12px; color: #000000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;');
+    this.simTitleEl.setAttribute('style', 'font-size: ${baseFs + 6}px; font-weight: bold; line-height: 1.4; margin-top: 8px; margin-bottom: 12px; color: #000000; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;');
 
     const meta = simulatorFrame.createDiv();
     meta.setAttribute('style', 'font-size: 13px; color: #8c8c8c; margin-bottom: 24px; display: flex; gap: 10px; font-family: sans-serif;');
@@ -713,11 +1250,8 @@ class WeChatPreviewView extends ItemView {
       const fileContent = await this.app.vault.read(activeFile);
       const frontMatter = this.app.metadataCache.getFileCache(activeFile)?.frontmatter || {};
 
-      const title = frontMatter.topic || frontMatter.title || activeFile.basename;
+      let title = frontMatter.topic || frontMatter.title || activeFile.basename;
       const author = frontMatter.persona || frontMatter.author || this.plugin.settings.author || '作者';
-
-      this.simTitleEl.setText(title);
-      this.simAuthorEl.setText(author);
 
       // Parse markdown to HTML
       let markdownBody = fileContent;
@@ -726,6 +1260,10 @@ class WeChatPreviewView extends ItemView {
       if (match) {
         markdownBody = fileContent.slice(match[0].length);
       }
+      const digest = this.plugin.buildDigest(frontMatter, markdownBody);
+
+      this.simTitleEl.setText(title);
+      this.simAuthorEl.setText(author);
 
       const tempEl = document.createElement('div');
       await MarkdownRenderer.renderMarkdown(markdownBody, tempEl, activeFile.path, this);
@@ -733,6 +1271,15 @@ class WeChatPreviewView extends ItemView {
       this.plugin.convertLinksToFootnotes(tempEl);
       this.plugin.sanitizeListsForWeChat(tempEl);
       this.plugin.cleanEmptyParagraphs(tempEl);
+      this.plugin.convertDivsToSections(tempEl);
+      if (layoutMode === 'premium_card') {
+        this.plugin.removeAutoDigestSourceBlock(tempEl, frontMatter);
+      }
+
+      const h1Node = tempEl.querySelector('h1');
+      if (h1Node) {
+        title = h1Node.textContent.trim();
+      }
 
       // Styling parameters
       let h2Style = '';
@@ -744,50 +1291,72 @@ class WeChatPreviewView extends ItemView {
       let tdStyle = '';
       let codeBlockStyle = '';
       let inlineCodeStyle = '';
+      const baseFs = (this.plugin ? this.plugin.settings : this.settings)?.baseFontSize || 16;
+      const lh = (this.plugin ? this.plugin.settings : this.settings)?.lineHeight || 1.65;
       const fontStack = fontFamily === 'sans-serif' ? "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Microsoft YaHei', sans-serif" : "Georgia, 'Nimbus Roman No9 L', STSong, 'Songti SC', serif";
 
       if (layoutMode === 'minimalist') {
-        h2Style = `color: ${primaryColor}; border-bottom: 2px solid ${primaryColor}; padding-bottom: 8px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 22px; letter-spacing: 1px; font-family: ${fontStack}; text-align: left;`;
-        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-left: 4px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #f8f8f8; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: 15px; border-radius: 4px; line-height: 1.7; letter-spacing: 0.5px; font-family: ${fontStack};`;
-        pStyle = `font-size: 16px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        h2Style = `color: ${primaryColor}; border-bottom: 2px solid ${primaryColor}; padding-bottom: 8px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: ${baseFs + 6}px; letter-spacing: 1px; font-family: ${fontStack}; text-align: left;`;
+        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: ${baseFs + 2}px; border-left: 4px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #f8f8f8; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7; letter-spacing: 0.5px; font-family: ${fontStack};`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: ${primaryColor}1a; border: 1px solid #e0e0e0; padding: 10px; font-weight: bold; text-align: left;`;
         tdStyle = `border: 1px solid #e0e0e0; padding: 10px; line-height: 1.5; color: #444444;`;
-        codeBlockStyle = `background-color: #f8f8f8; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0; border: 1px solid #eaeaea; color: #333333;`;
+        codeBlockStyle = `background-color: #f8f8f8; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0; border: 1px solid #eaeaea; color: #333333;`;
         inlineCodeStyle = `background-color: #f3f3f3; color: #c7254e; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
       } else if (layoutMode === 'modern_left') {
         h2Style = `color: #111111; border-left: 6px solid ${primaryColor}; padding-left: 14px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 23px; letter-spacing: 1px; font-family: ${fontStack};`;
         h3Style = `color: #222222; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 19px; border-left: 4px dashed ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #fcfcfc; border-left: 4px dashed ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: 15px; border-radius: 4px; line-height: 1.7; font-family: ${fontStack};`;
-        pStyle = `font-size: 16px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #fcfcfc; border-left: 4px dashed ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #555555; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7; font-family: ${fontStack};`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.8; color: #333333; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.8px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: #f2f2f2; border: 1px solid #dddddd; padding: 10px; font-weight: bold; text-align: left; border-bottom: 2px solid ${primaryColor};`;
         tdStyle = `border: 1px solid #dddddd; padding: 10px; line-height: 1.5; color: #333333;`;
-        codeBlockStyle = `background-color: #272822; color: #f8f8f2; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0;`;
+        codeBlockStyle = `background-color: #272822; color: #f8f8f2; border-radius: 6px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0;`;
         inlineCodeStyle = `background-color: #f8f8f2; color: ${primaryColor}; border: 1px solid #e1e1e8; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
       } else if (layoutMode === 'corporate_box') {
-        h2Style = `background-color: ${primaryColor}; color: #ffffff; padding: 10px 16px; border-radius: 6px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: 20px; letter-spacing: 1.5px; display: block; font-family: ${fontStack}; box-shadow: 0 2px 8px rgba(0,0,0,0.05);`;
-        h3Style = `color: ${primaryColor}; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-bottom: 1px dashed ${primaryColor}; padding-bottom: 6px; font-family: ${fontStack};`;
-        quoteStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #4a5568; font-size: 15px; border-radius: 4px; line-height: 1.7; font-family: ${fontStack};`;
-        pStyle = `font-size: 16px; line-height: 1.85; color: #2d3748; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.5px; font-family: ${fontStack};`;
-        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: ${fontStack};`;
+        h2Style = `background-color: ${primaryColor}; color: #ffffff; padding: 10px 16px; border-radius: 6px; margin-top: 45px; margin-bottom: 22px; font-weight: 800; font-size: ${baseFs + 4}px; letter-spacing: 1.5px; display: block; font-family: ${fontStack}; box-shadow: 0 2px 8px rgba(0,0,0,0.05);`;
+        h3Style = `color: ${primaryColor}; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: ${baseFs + 2}px; border-bottom: 1px dashed ${primaryColor}; padding-bottom: 6px; font-family: ${fontStack};`;
+        quoteStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; padding: 16px 20px; margin: 20px 0; color: #4a5568; font-size: ${baseFs - 1}px; border-radius: 4px; line-height: 1.7; font-family: ${fontStack};`;
+        pStyle = `font-size: ${baseFs}px; line-height: 1.85; color: #2d3748; margin-bottom: 1.6em; text-align: justify; letter-spacing: 0.5px; font-family: ${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 20px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack};`;
         thStyle = `background-color: ${primaryColor}; color: #ffffff; border: 1px solid #e2e8f0; padding: 10px; font-weight: bold; text-align: left;`;
         tdStyle = `border: 1px solid #e2e8f0; padding: 10px; line-height: 1.5; color: #2d3748; background-color: #fcfdfd;`;
-        codeBlockStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; border-radius: 0 6px 6px 0; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 20px 0; color: #4a5568;`;
+        codeBlockStyle = `background-color: #f7fafc; border-left: 4px solid ${primaryColor}; border-radius: 0 6px 6px 0; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 20px 0; color: #4a5568;`;
         inlineCodeStyle = `background-color: #edf2f7; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em;`;
+      } else if (layoutMode === 'premium_card') {
+        h2Style = `text-align: center; color: ${primaryColor}; margin-top: 48px; margin-bottom: 24px; font-weight: 800; font-size: 16px; letter-spacing: 4px; font-family: ${fontStack};`;
+        h3Style = `color: #111111; margin-top: 32px; margin-bottom: 14px; font-weight: 700; font-size: 18px; border-left: 3px solid ${primaryColor}; padding-left: 10px; font-family: ${fontStack};`;
+        quoteStyle = `margin:14px 0px;padding:12px 16px;background:rgb(247,248,252);border-left:3px solid ${primaryColor};border-radius:0px 6px 6px 0px;color:rgb(85,85,85);font-size:${baseFs - 1}px;line-height:${lh};font-family:${fontStack};`;
+        pStyle = `margin-bottom:1.2em;font-size:${baseFs}px;color:rgb(51,65,85);line-height:${lh};text-align:justify;overflow-wrap:break-word;font-family:${fontStack};`;
+        tableStyle = `width: 100%; border-collapse: collapse; margin: 24px 0; font-size: ${baseFs - 2}px; font-family: ${fontStack}; border: 1px solid rgb(229,231,235); border-radius: 8px; overflow: hidden;`;
+        thStyle = `background-color: rgb(248,250,252); border-bottom: 1px solid rgb(229,231,235); padding: 12px 10px; font-weight: bold; text-align: left; color: rgb(17,24,39);`;
+        tdStyle = `border-bottom: 1px solid rgb(229,231,235); padding: 10px; line-height: 1.5; color: rgb(71,85,105);`;
+        codeBlockStyle = `background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: ${baseFs - 2}px; line-height: 1.6; margin: 24px 0; color: #334155;`;
+        inlineCodeStyle = `background-color: #f1f5f9; color: ${primaryColor}; padding: 2px 6px; border-radius: 4px; font-family: Consolas, Monaco, monospace; font-size: 0.9em; font-weight: 600;`;
       }
 
       // Formats
+            if (layoutMode === 'premium_card') {
+        const caller = this.plugin ? this.plugin : this;
+        caller.transformPremiumHeadings(tempEl, primaryColor, fontStack, frontMatter, title, digest);
+      }
       tempEl.querySelectorAll('h2').forEach(el => el.setAttribute('style', h2Style));
       tempEl.querySelectorAll('h3').forEach(el => el.setAttribute('style', h3Style));
-      tempEl.querySelectorAll('h4, h5, h6').forEach(el => el.setAttribute('style', `color: #222222; margin-top: 24px; margin-bottom: 12px; font-weight: bold; font-size: 16px; font-family: ${fontStack};`));
+      tempEl.querySelectorAll('h4, h5, h6').forEach(el => el.setAttribute('style', `color: #222222; margin-top: 24px; margin-bottom: 12px; font-weight: bold; font-size: ${baseFs}px; font-family: ${fontStack};`));
       tempEl.querySelectorAll('p').forEach(el => el.setAttribute('style', pStyle));
       tempEl.querySelectorAll('blockquote').forEach(el => el.setAttribute('style', quoteStyle));
-      tempEl.querySelectorAll('ul, ol').forEach(el => el.setAttribute('style', `margin: 12px 0 20px 22px; padding: 0; line-height: 1.8; font-size: 16px; color: #333333; letter-spacing: 0.5px; font-family: ${fontStack};`));
+      tempEl.querySelectorAll('ul, ol').forEach(el => el.setAttribute('style', `margin: 12px 0 20px 22px; padding: 0; line-height: ${lh}; font-size: ${baseFs}px; color: #333333; letter-spacing: 0.5px; font-family: ${fontStack};`));
       tempEl.querySelectorAll('li').forEach(el => el.setAttribute('style', "margin-bottom: 10px;"));
       tempEl.querySelectorAll('strong').forEach(el => el.setAttribute('style', `color: ${primaryColor}; font-weight: bold;`));
-      tempEl.querySelectorAll('hr').forEach(el => el.setAttribute('style', "border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;"));
+      tempEl.querySelectorAll('hr').forEach(el => {
+        if (layoutMode === 'premium_card') {
+          el.remove();
+        } else {
+          el.setAttribute('style', "border: 0; border-top: 1px solid #e0e0e0; margin: 35px 0;");
+        }
+      });
       tempEl.querySelectorAll('table').forEach(el => el.setAttribute('style', tableStyle));
       tempEl.querySelectorAll('th').forEach(el => el.setAttribute('style', thStyle));
       tempEl.querySelectorAll('td').forEach(el => el.setAttribute('style', tdStyle));
@@ -882,6 +1451,7 @@ class WeChatPublisherSettingTab extends PluginSettingTab {
         .addOption('minimalist', '「极细线框风」H2下划线排版')
         .addOption('modern_left', '「现代左竖风」H2左侧粗竖线排版')
         .addOption('corporate_box', '「商务色块风」H2实色背景框排版')
+        .addOption('premium_card', '「高级卡片风」r-markdown 卡片排版')
         .setValue(this.plugin.settings.layoutMode || 'minimalist')
         .onChange(async (value) => {
           this.plugin.settings.layoutMode = value;

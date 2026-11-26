@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="assets/plugin_logo.png" width="220" alt="Obsidian WeChat Publisher"/>
+<img src="assets/plugin_logo.png" width="220" alt="WePress"/>
 
-# Obsidian WeChat Publisher
+# WePress
 
-面向自媒体创作者与法律人的本地一键微信排版与草稿箱直连同步插件。
+> 原 **Obsidian WeChat Publisher** —— 面向自媒体创作者与法律人的本地一键微信排版与草稿箱直连同步插件。
 
 [简体中文](README.md) | [English](README_EN.md)
 
 </div>
 
-Obsidian WeChat Publisher 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝同步至微信公众号草稿箱的开源插件。本插件采用完全本地化的架构设计，无需中转服务器，直接保障自媒体创作者的数据与账号安全。
+WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝同步至微信公众号草稿箱的开源插件。本插件采用完全本地化的架构设计，无需中转服务器，直接保障自媒体创作者的数据与账号安全。
 
 ---
 
@@ -25,6 +25,16 @@ Obsidian WeChat Publisher 是一个用于将 Obsidian 本地 Markdown 笔记一�
 <h2 align="center">📷 功能效果预览 (Screenshots)</h2>
 
 ![双栏排版实时预览与微信端模拟器](assets/screenshot_preview.png)
+
+### 🎨 四套内置排版风格对比 (Layout Styles)
+
+| 极细线框风 (Minimalist) | 现代左竖风 (Modern Left) |
+| :---: | :---: |
+| <img src="assets/style_minimalist.png" width="320" alt="极细线框风"/> | <img src="assets/style_modern_left.png" width="320" alt="现代左竖风"/> |
+
+| 商务色块风 (Corporate Box) | 高级卡片风 (Premium Card) |
+| :---: | :---: |
+| <img src="assets/style_corporate_box.png" width="320" alt="商务色块风"/> | <img src="assets/style_premium_card.png" width="320" alt="高级卡片风"/> |
 
 
 ---
@@ -42,7 +52,7 @@ Obsidian WeChat Publisher 是一个用于将 Obsidian 本地 Markdown 笔记一�
 
 *   **开发者署名与公益免费**：由 **铭泽律师 (Maxwell)** 专为法律人与自媒体创作者开发，完全免费且供全社区公益使用。
 *   **双栏实时预览 (Live Preview Simulator)**：可在 Obsidian 内部一键开启与微信移动端 100% 像素级对齐的预览模拟器。编辑正文时，预览窗口支持实时同步渲染，彻底告别在第三方编辑器之间反复复制粘贴的繁琐流程。
-*   **三套经典版式与个性取色 (Custom Theme & Preset Layouts)**：内置「极细线框风」、「现代左竖风」、「商务色块风」三套针对自媒体深度优化的经典排版骨架。支持在预览控制栏中通过 Hex 取色器实时修改主色调，一秒匹配个人或企业品牌色。
+*   **四套精选版式与个性取色 (Custom Theme & Preset Layouts)**：内置「极细线框风」、「现代左竖风」、「商务色块风」与「高级卡片风」（支持文章信息前置大卡片、阅读路线章节目录卡、CHAPTER 大字编号、末尾互动尾图），支持在预览控制栏中通过 Hex 取色器实时修改主色调，并支持字号与行距动态调节。更多版本演进详见 [更新日志](CHANGELOG.md)。
 *   **微信排版兼容性过滤器 (WeChat Layout Filter)**：
     *   **列表深度容错**：自动剥除 `<li>` 标签内部嵌套的 `<p>` 段落标签，消除微信公众号后台解析列表时常出现的双重序号、多余空白行等顽固格式 Bug。
     *   **表格与代码块美化**：自动将 Markdown 渲染的复杂表格和代码块转化为符合微信严格行内规则的行内 CSS 样式。代码块支持自动溢出滚动，表格支持细边框防错位，保障代码和数据展示的易读性。

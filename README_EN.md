@@ -1,16 +1,16 @@
 <div align="center">
 
-<img src="assets/plugin_logo.png" width="220" alt="Obsidian WeChat Publisher"/>
+<img src="assets/plugin_logo.png" width="220" alt="WePress"/>
 
-# Obsidian WeChat Publisher
+# WePress
 
-A local one-click WeChat formatting and draft box synchronization plugin for self-media creators and legal professionals.
+> Formerly **Obsidian WeChat Publisher** — A local one-click WeChat formatting and draft box synchronization plugin for creators and legal professionals.
 
 [English](README_EN.md) | [简体中文](README.md)
 
 </div>
 
-Obsidian WeChat Publisher is an open-source plugin designed to format and seamlessly sync local Obsidian Markdown notes to your WeChat Official Account drafts box with one click. Adopting a fully localized architecture, it runs entirely on your machine without intermediate proxy servers, ensuring maximum data confidentiality and account safety.
+WePress is an open-source Obsidian plugin designed to format and seamlessly sync local Markdown notes to your WeChat Official Account drafts box with one click. Adopting a fully localized architecture, it runs entirely on your machine without intermediate proxy servers, ensuring maximum data confidentiality and account safety.
 
 ---
 
@@ -25,6 +25,16 @@ Obsidian WeChat Publisher is an open-source plugin designed to format and seamle
 <h2 align="center">📷 Screenshots</h2>
 
 ![Split-screen live preview and WeChat simulator](assets/screenshot_preview.png)
+
+### 🎨 Built-in Layout Styles
+
+| Minimalist (极细线框风) | Modern Left (现代左竖风) |
+| :---: | :---: |
+| <img src="assets/style_minimalist.png" width="320" alt="Minimalist"/> | <img src="assets/style_modern_left.png" width="320" alt="Modern Left"/> |
+
+| Corporate Box (商务色块风) | Premium Card (高级卡片风) |
+| :---: | :---: |
+| <img src="assets/style_corporate_box.png" width="320" alt="Corporate Box"/> | <img src="assets/style_premium_card.png" width="320" alt="Premium Card"/> |
 
 
 ---
@@ -42,7 +52,7 @@ This plugin undergoes rigorous security checks to guarantee your privacy:
 
 *   **MIT Licensed & Free**: Developed by **Maxwell (Mingze)** for legal professionals and self-media creators, distributed as public welfare open-source software.
 *   **Side-by-Side Live Preview**: Open an interactive mobile simulator inside Obsidian that aligns 100% with the WeChat layout. Visual rendering updates instantly as you edit, saving you from repetitive copy-pasting.
-*   **Custom Styling Presets**: Built-in "Minimalist", "Modern Left", and "Corporate Box" layout styles. Customize the primary theme color with an integrated Hex color picker to match your brand style.
+*   **Four Curated Layout Presets**: Built-in "Minimalist", "Modern Left", "Corporate Box", and "Premium Card" (featuring a top article info card, Reading Path TOC, chapter numbering, and call-to-action footer). Customize the primary color with an integrated Hex color picker, plus dynamic font size and line-height controls. See [CHANGELOG.md](CHANGELOG.md) for version history.
 *   **WeChat Layout Compatibility Filters**:
     *   **List Bug Fixes**: Automatically purges nested `<p>` tags inside `<li>` elements, fixing double-bullet and empty-row errors commonly caused by WeChat's parser.
     *   **Tables & Code Blocks**: Automatically translates Markdown tables and code blocks into WeChat-friendly inline CSS styles. Supports code overflow scrolling and border alignments.
