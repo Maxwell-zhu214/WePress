@@ -56,11 +56,45 @@ This plugin undergoes rigorous security checks to guarantee your privacy:
 <h2 align="center">🛠️ Installation Guide</h2>
 
 ### Manual Installation
-1. Download `main.js` and `manifest.json` from the latest repository files.
-2. Open your Obsidian Vault directory and navigate to the hidden directory `.obsidian/plugins/`.
-3. Create a folder named `obsidian-wechat-publisher`.
-4. Copy `main.js` and `manifest.json` into that folder.
-5. Open Obsidian settings, go to "Community Plugins", and enable **WeChat Publisher**.
+1. Download `main.js` and `manifest.json` from the latest [Releases](https://github.com/Maxwell-zhu214/WePress/releases).
+2. Open your Obsidian Vault directory and navigate to the hidden folder `.obsidian/plugins/`.
+3. Create a folder named `wepress` (if upgrading from `obsidian-wechat-publisher`, rename that folder to `wepress` and overwrite the files).
+4. Copy `main.js` and `manifest.json` into `.obsidian/plugins/wepress/`.
+5. Open Obsidian **Settings → Community plugins**, refresh the list, and enable **WePress**.
+
+---
+
+<h2 align="center">📖 Usage Guide</h2>
+
+### Step 1: Configure WeChat Official Account Credentials
+1. Log in to the [WeChat Official Account Platform](https://mp.weixin.qq.com/), go to **Settings & Development → Basic Configuration**, and copy your **AppID** and **AppSecret**.
+2. Add your computer's public IP address to the **IP Whitelist** on the same page (required by WeChat's API).
+3. In Obsidian, go to **Settings → Community plugins → WePress**, enter your `AppID`, `AppSecret`, default author name, and choose your preferred layout style and theme color.
+
+### Step 2: (Optional) Add YAML Frontmatter to Your Note
+You can specify the cover image, column name, digest, and tags at the top of your Markdown note:
+
+```yaml
+---
+title: Your Article Title
+author: Maxwell
+cover: assets/cover.png
+column_name: Deep Dive
+digest: A short summary of your article
+tags:
+  - Productivity
+  - Obsidian
+---
+```
+
+> 💡 **Tip**: If `cover` is omitted, WePress automatically uses the first image in your note (or an image with `alt="封面"`) as the draft cover.
+
+### Step 3: Live Preview & One-Click Sync
+1. Open the Markdown note you want to publish in Obsidian.
+2. Press `Cmd + P` (or `Ctrl + P` on Windows) to open the Command Palette:
+   * Run **`WePress: 预览当前笔记的微信排版效果`** to open the side-by-side mobile simulator. Switch between the 4 layout styles, pick a custom primary color, and adjust font size or line height in real time.
+   * When ready, click **`📡 同步到草稿箱`** in the preview toolbar (or run **`WePress: 同步当前笔记到微信公众号草稿箱`** directly).
+3. WePress will upload all local images to WeChat CDN and push the formatted article straight into your Official Account Drafts Box.
 
 ---
 

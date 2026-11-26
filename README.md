@@ -53,14 +53,48 @@ WePress 是一个用于将 Obsidian 本地 Markdown 笔记一键渲染并无缝�
 
 ---
 
-<h2 align="center">🛠️ 安装方法</h2>
+<h2 align="center">🛠️ 安装方法 (Installation)</h2>
 
 ### 手动安装 (Manual Installation)
-1. 下载本仓库中的 `main.js` 与 `manifest.json` 文件。
-2. 在您的 Obsidian 库目录中，进入 `.obsidian/plugins/` 目录。
-3. 创建名为 `obsidian-wechat-publisher` 的子文件夹。
-4. 将 `main.js` 和 `manifest.json` 放入该文件夹。
-5. 进入 Obsidian 软件设置，在“已安装插件”中启用本插件即可。
+1. 前往本仓库 [Releases](https://github.com/Maxwell-zhu214/WePress/releases) 下载最新版的 `main.js` 与 `manifest.json` 文件。
+2. 打开您的 Obsidian 库根目录，进入隐藏文件夹 `.obsidian/plugins/`。
+3. 新建名为 `wepress` 的子文件夹（若此前使用旧版 `obsidian-wechat-publisher`，可直接将该文件夹重命名为 `wepress` 并覆盖文件）。
+4. 将 `main.js` 和 `manifest.json` 放入 `.obsidian/plugins/wepress/` 目录中。
+5. 打开 Obsidian「设置」→「第三方插件」，关闭安全模式后刷新列表，开启 **WePress** 即可。
+
+---
+
+<h2 align="center">📖 使用教程 (Usage Guide)</h2>
+
+### 第一步：配置微信公众号凭证
+1. 登录 [微信公众平台](https://mp.weixin.qq.com/)，进入左侧菜单「设置与开发」→「基本配置」，获取您的 **AppID** 与 **AppSecret**。
+2. 在同一页面的「IP 白名单」中，将您当前电脑的公网 IP 地址加入白名单（否则微信服务器会拦截本地同步请求）。
+3. 回到 Obsidian，打开「设置」→「第三方插件」→「**WePress**」，填入 `AppID`、`AppSecret`、默认作者名，并选择您喜欢的默认排版版式与主题色。
+
+### 第二步：（可选）在笔记顶部添加 Frontmatter 元数据
+在您的 Markdown 笔记最顶部，可以通过 YAML Frontmatter 指定封面图、专栏名、摘要与标签（不填也会自动适配）：
+
+```yaml
+---
+title: 文章主标题
+author: 铭泽律师
+cover: assets/cover.png
+column_name: 深度长文
+digest: 一句话文章导读摘要
+tags:
+  - AI合规
+  - 效率工具
+---
+```
+
+> 💡 **提示**：若未在 Frontmatter 中指定 `cover`，插件会自动将正文中第一张图片（或标注为 `![封面](...)` 的图片）作为公众号封面上传。
+
+### 第三步：实时预览与一键同步到草稿箱
+1. 在 Obsidian 中打开您要发布的 Markdown 笔记。
+2. 按下 `Cmd + P`（Windows 为 `Ctrl + P`）呼出命令面板：
+   * 运行 **`WePress: 预览当前笔记的微信排版效果`**：右侧将打开 1:1 微信移动端模拟器。您可以在顶部控制栏实时切换 4 套排版风格、使用取色器修改主色调、调整字号与行距。
+   * 确认效果无误后，点击预览栏右上角的 **`📡 同步到草稿箱`** 按钮（或直接在命令面板运行 **`WePress: 同步当前笔记到微信公众号草稿箱`**）。
+3. 插件会自动将本地图片上传至微信 CDN 并生成排版后的图文草稿，几秒后即可在微信公众号后台「草稿箱」中看到成稿。
 
 ---
 
